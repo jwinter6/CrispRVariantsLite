@@ -46,7 +46,18 @@ mapFastQ <- function(){
  
     # Update the selected genome in the guide panel to match the mapping genome
     slct <- input$select_genome
-    updateSelectInput(session, "select_Refgenome", selected = slct, choices = genlist)
+    if(is.null(shiny::need(input$select_genome, message=FALSE)))
+    {
+      print("we update the refgenome")
+      print(input$select_genome)
+      print(slct)
+      slct <- paste(slct, ".fa", sep="")
+      print(slct)
+      print(genlist)
+      updateSelectInput(session, "select_Refgenome", selected = slct, choices = genlist)
+    }
+    print("noUpdate")
+    print(input$select_genome)
   
     #BWA indices were generated using bwa version 0.7.10
     ind <- paste0(genome,"/", genlist[input$select_genome])
@@ -70,7 +81,8 @@ mapFastQ <- function(){
           progress$inc(1/n, detail = paste0("Mapping FASTQs ", i, "/", n))
           cmd <- paste0("bwa mem -t 2 ", bwa_index, " ", 
                     v$fq_fnames[i]," | samtools view -Sb - > ", bm_fnames[i])
-          cat(cmd, "\n"); system(cmd)
+          # system2 command
+          system(cmd)
           Rsamtools::indexBam(Rsamtools::sortBam(bm_fnames[i],v$srt_bm_names[i]))
           unlink(bm_fnames[i])
         }

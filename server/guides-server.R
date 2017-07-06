@@ -73,21 +73,30 @@ observeEvent({
 setTxdb <- reactive({
     # Note: requires that the file names of the txdb match those of ref genome and
     # this can be achieved by symbolic links
-    f <- paste0("./data/txdb/", gsub(".fa",".sqlite", input$select_Refgenome))
+    f <- file.path(genome, gsub(".fa",".sqlite", input$select_Refgenome))
     result <- AnnotationDbi::loadDb(f)
     result
 })
 
 
-genome_index <- reactive({
-    paste0("./data/genome/", input$select_Refgenome)
-})
+ genome_index <- reactive({
+     paste0("./genome/", input$select_Refgenome)
+   #DEBUG
+   #print(paste0("./genome/", input$select_Refgenome))
+ })
 
 
 observeEvent(input$select_Refgenome, {
-    chrs <- read.table(paste0(genome_index(), ".fai"),
-                   stringsAsFactors = FALSE)[,1]
-    
+  #DEBUG
+  #print("HERE!")
+  print(input$select_Refgenome)
+  #print(file.path( "./genome", paste(input$select_Refgenome, ".fai",sep="") ))
+  #print(genome_index())
+  chrs <- read.table(file.path(paste(genome_index(), ".fai",sep="") ),
+                     stringsAsFactors = FALSE)[,1]
+    # chrs <- read.table(file.path( "./genome/", paste(input$select_Refgenome, ".fai",sep="") ),
+    #                stringsAsFactors = FALSE)[,1]
+    print(head(chrs))
     updateSelectInput(session, "g.chr", choices = chrs, selected = chrs[1])
     
 })
@@ -195,6 +204,7 @@ observeEvent(input$run_guide,{
 
 
     # If coordinates exist and were edited most recently than sequence
+    #file.path( "./genome/", paste(input$select_Refgenome, ".fai",sep="") )
     if (isTRUE(d$use.coords) & nchar(input$g.start) > 0){
         ref <- setGuidesFromCoords(genome_index(), progress)
     
@@ -311,7 +321,7 @@ reference_plot <- reactive({
          end = box_end),
        ins.sites = data.frame(),
        axis.text.size = 14,
-       plot.text.size = 3,
+       plot.text.size = 3
     )
 
     return(p)

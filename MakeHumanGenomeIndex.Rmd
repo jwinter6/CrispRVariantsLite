@@ -1,0 +1,49 @@
+---
+title: "MakeHumanGenomeIndex"
+author: "Jan Winter"
+date: "3 Juli 2017"
+output: html_document
+---
+
+# Aim
+
+Generate and deploy the human genome hg38 from Ensembl and provide it for CRISPRVariantsLite.
+
+
+
+## First we make the TXDB files
+
+```{r}
+# suck down the UCSC tables and use these via a TxDb SQLITE file for each chromosome
+# Note: SAME name as the genome reference
+source("https://bioconductor.org/biocLite.R")
+library(GenomicFeatures)
+
+
+txdb <- makeTxDbFromUCSC("hg38", "RefSeq all")
+#txdb <- makeTxDbFromUCSC("hg38", "knownGene")
+#txdb <- makeTxDbFromBiomart()
+saveDb(txdb, file= "genome/HS_GRCh38.sqlite")
+
+
+```
+
+
+## Second we download and create the BWA mem index
+
+```{bash}
+bwa index -a bwtsw HS_GRCh38.fa
+```
+
+```{bash}
+samtools faidx HS_GRCh38.fa
+```
+
+
+
+
+
+
+
+
+

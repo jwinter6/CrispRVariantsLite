@@ -1,5 +1,5 @@
 # genomic database
-genome <- "./data/genome"
+genome <- "./genome"
 
 # List available genomes, ending in .fa
 gendb <- dir(genome, ".fa$", recursive = TRUE, full.names = TRUE)
