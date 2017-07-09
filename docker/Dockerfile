@@ -97,7 +97,6 @@ RUN echo 'options(download.file.method = "libcurl")' >> /usr/local/lib/R/etc/Rpr
 
 
 COPY docker-entrypoint.sh /
-COPY index.html /srv/shiny-server
 RUN chmod +x /docker-entrypoint.sh
 RUN chmod +x /srv/shiny-server/index.html
 
@@ -105,7 +104,7 @@ EXPOSE 3838
 
 # Add ENV for KiteMatic
 ENV websockets_behind_proxy=FALSE
-ENV verbose_logfiles=TRUE
+ENV verbose_logfiles=FALSE
 
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

@@ -96,7 +96,7 @@ observeEvent(input$select_Refgenome, {
                      stringsAsFactors = FALSE)[,1]
     # chrs <- read.table(file.path( "./genome/", paste(input$select_Refgenome, ".fai",sep="") ),
     #                stringsAsFactors = FALSE)[,1]
-    print(head(chrs))
+    
     updateSelectInput(session, "g.chr", choices = chrs, selected = chrs[1])
     
 })
@@ -229,7 +229,7 @@ observeEvent(input$run_guide,{
         # Map input sequence and parse the results
         idx <- genome_index()
         ref <- input$ref_seqs
-        print(ref)
+        
 
         result <- mapGuide(ref, idx)
         if (is.null(result)) return()

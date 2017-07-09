@@ -28,10 +28,10 @@ observeEvent(input$run_fastq,{
     increment_prog(progress, 15, detail = "Map FastQ reads", n.inc = 6)
     mapFastQ()
   
-    print("toogle modal")
+    #print("toogle modal")
     toggleModal(session, "modal_FASTQ", toggle = "close")
     
-    print("make Table")
+    #print("make Table")
     createHTable("metadata")
     
     #closeAlert(session, "prepAlertFASTQ")

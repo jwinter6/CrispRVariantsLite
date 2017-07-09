@@ -48,16 +48,11 @@ mapFastQ <- function(){
     slct <- input$select_genome
     if(is.null(shiny::need(input$select_genome, message=FALSE)))
     {
-      print("we update the refgenome")
-      print(input$select_genome)
-      print(slct)
+      
       slct <- paste(slct, ".fa", sep="")
-      print(slct)
-      print(genlist)
+      
       updateSelectInput(session, "select_Refgenome", selected = slct, choices = genlist)
     }
-    print("noUpdate")
-    print(input$select_genome)
   
     #BWA indices were generated using bwa version 0.7.10
     ind <- paste0(genome,"/", genlist[input$select_genome])

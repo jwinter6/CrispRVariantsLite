@@ -20,10 +20,11 @@ source("https://bioconductor.org/biocLite.R")
 library(GenomicFeatures)
 
 
-txdb <- makeTxDbFromUCSC("hg38", "RefSeq all")
+txdb <- makeTxDbFromUCSC("hg38", "knownGene")
 #txdb <- makeTxDbFromUCSC("hg38", "knownGene")
 #txdb <- makeTxDbFromBiomart()
-saveDb(txdb, file= "genome/HS_GRCh38.sqlite")
+setwd("/Users/janwinter/Documents/PhD/GitHub/CRISPRvariantsLite/")
+saveDb(txdb, file= "./genome/HS_GRCh38.sqlite")
 
 
 ```
