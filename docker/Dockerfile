@@ -35,9 +35,13 @@ RUN apt-get update && apt-get -y --no-install-recommends \
    install texlive texlive-xetex
 
 # install the shiny server debian package from r-studio
-COPY ./shiny-server-1.5.2.837-amd64.deb /tmp/ss.deb
-RUN gdebi -n /tmp/ss.deb && \
-    rm -f /tmp/ss.deb
+
+#COPY ./shiny-server-1.5.2.837-amd64.deb /tmp/ss.deb
+sudo apt-get install -y gdebi-core
+sudo gdebi shiny-server-1.5.3.deb
+
+#RUN gdebi -n /tmp/ss.deb && \
+#    rm -f /tmp/ss.deb
 
 COPY ./shiny-server.sh /usr/bin/shiny-server.sh
 RUN chmod +x /usr/bin/shiny-server.sh
