@@ -45,7 +45,6 @@ docker pull boutroslab/crisprvariantslite:latest
 
 In order to get the genome reference, create a folder on your machine and paste all necessary genome files (as described in the makelinks file) into this folder.
 
-For the latest human genome, you can also follow these steps:
 
 1. Download the genome reference build from UCSC
 2. Run BWA to create an index
@@ -79,3 +78,10 @@ saveDb(txdb, file= "./genome/GENOME.sqlite")
 Dont forget to map the genome folder
 
 docker run --rm -v PATHTOFOLDER:/srv/shiny-server/CRISPRVariantsLite/genome -p 3838:3838 boutroslab/crisprvariantslite:latest
+
+
+## how to Build the docker container
+
+Clone or download the repository from https://github.com/jwinter6/CrispRVariantsLite/archive/master.zip
+
+run docker build command within the docker subdirectory.

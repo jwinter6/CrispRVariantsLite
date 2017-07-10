@@ -1,9 +1,27 @@
+#SAMTOOLS
+FROM comics/samtools:1.3.1 as SAMTOOLS
+# BWA
+FROM comics/bwa:0.7.15 as BWA
+# R base
 FROM rocker/r-ver:3.4.0
-FROM comics/samtools:latest # samtools
-FROM comics/bwa:latest # BWA
-
 
 MAINTAINER Jan Winter "jan.winter@dkfz.de"
+
+# COPY BWA AND SAMMTOOLS
+RUN \
+    mkdir -p /opt/tools/
+    
+COPY --from=SAMTOOLS /software/applications/ /opt/tools
+COPY --from=BWA /software/applications/ /opt/tools
+ENV PATH=/opt/tools/bwa/v0.7.15:$PATH
+RUN echo 'export PATH=/opt/tools/:$PATH' >> /etc/profile
+
+ENV PATH=/opt/tools/samtools/1.3.1/bin:$PATH
+RUN echo 'export PATH=/opt/tools/:$PATH' >> /etc/profile
+
+
+ENV PATH=/opt/tools:$PATH
+RUN echo 'export PATH=/opt/tools/:$PATH' >> /etc/profile
 
 #### things we need for the crispranalyzer package
 #### and for the crispr reannotator
@@ -30,18 +48,11 @@ RUN apt-get update && apt-get install -y  \
     
 RUN apt-get update && apt-get install -y ghostscript
 
-# again some more things we need to run the crispranalyzer package
-RUN apt-get update && apt-get -y --no-install-recommends \
-   install texlive texlive-xetex
 
 # install the shiny server debian package from r-studio
-
-#COPY ./shiny-server-1.5.2.837-amd64.deb /tmp/ss.deb
-sudo apt-get install -y gdebi-core
-sudo gdebi shiny-server-1.5.3.deb
-
-#RUN gdebi -n /tmp/ss.deb && \
-#    rm -f /tmp/ss.deb
+COPY ./shiny-server-1.5.2.837-amd64.deb /tmp/ss.deb
+RUN gdebi -n /tmp/ss.deb && \
+    rm -f /tmp/ss.deb
 
 COPY ./shiny-server.sh /usr/bin/shiny-server.sh
 RUN chmod +x /usr/bin/shiny-server.sh
@@ -55,7 +66,7 @@ RUN R -e 'install.packages("devtools", repos = "http://cloud.r-project.org/")'
 # install all the packages we need from cran, bioconductor and github
 
 RUN R -e 'source("http://bioconductor.org/biocLite.R");biocLite()'
-RUN R -e 'biocLite( c("CrispRVariants", "GenomicFeatures", "AnnotationDbi", "GenomicRanges","IRanges", "Rsamtools", "Biostrings") )'
+RUN R -e 'source("http://bioconductor.org/biocLite.R");biocLite( c("CrispRVariants", "GenomicFeatures", "AnnotationDbi", "GenomicRanges","IRanges", "Rsamtools", "Biostrings") )'
 RUN R -e 'devtools::install_version("dplyr", version = "0.5.0", repos = "http://cloud.r-project.org/")'
 RUN R -e 'devtools::install_version("readr", version = "1.0.0", repos = "http://cloud.r-project.org/")'
 RUN R -e 'devtools::install_version("shinydashboard", version = "0.5.3", repos = "http://cloud.r-project.org/")'
@@ -80,8 +91,9 @@ RUN R -e 'devtools::install_version("bookdown", version = "0.3", repos = "http:/
 RUN apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
-# install caR (TODO: replace private gitlab repos with public github account later..)
-RUN git clone git@github.com:jwinter6/CrispRVariantsLite.git /srv/shiny-server/CRISPRVariantsLite
+# Downloaded repository from https://github.com/jwinter6/CrispRVariantsLite/
+# use from folder
+COPY ./ /srv/shiny-server/CRISPRVariantsLite
 
 
 # add R profile options
@@ -92,12 +104,9 @@ RUN echo 'options(download.file.method = "libcurl")' >> /usr/local/lib/R/etc/Rpr
 # get BWA human reference genome
 # will be added as symbolic link by providing a shared mount with the -v option
 # see makefile in repository
-# /srv/shiny-server/CRISPRVariantsLite/reference/ SYMBOLIC LINKS
+# -v PATHTOGENOMES:/srv/shiny-server/CRISPRVariantsLite/genome/
 
 
-# MAKE BWA INDEX
-# BW index also needs to be in /srv/shiny-server/CRISPRVariantsLite/reference/
-# bwa index ref.fa
 
 
 COPY docker-entrypoint.sh /
