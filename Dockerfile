@@ -1,15 +1,27 @@
 #SAMTOOLS
 FROM comics/samtools:1.3.1 as SAMTOOLS
+# Make BWA and SAMTOOLS accessible
+#RUN setenforce 0
+RUN chmod -R 777 /software/applications/
+RUN chmod -R 777 /software/applications/samtools/1.3.1/bin/samtools.pl
+
 # BWA
 FROM comics/bwa:0.7.15 as BWA
+# Make BWA and SAMTOOLS accessible
+#RUN setenforce 0
+RUN chmod -R 777 /software/applications/
+RUN chmod -R 777 /software/applications/bwa/v0.7.15/bwa
+
 # R base
 FROM rocker/r-ver:3.4.0
+RUN setenforce 0
 
 MAINTAINER Jan Winter "jan.winter@dkfz.de"
 
 # COPY BWA AND SAMMTOOLS
 RUN \
-    mkdir -p /opt/tools/
+    mkdir -p /opt/tools/ \
+    chmod 777 /opt/tools
     
 COPY --from=SAMTOOLS /software/applications/ /opt/tools
 COPY --from=BWA /software/applications/ /opt/tools
@@ -107,7 +119,10 @@ RUN echo 'options(download.file.method = "libcurl")' >> /usr/local/lib/R/etc/Rpr
 # -v PATHTOGENOMES:/srv/shiny-server/CRISPRVariantsLite/genome/
 
 
-
+# Make BWA and SAMTOOLS accessible
+RUN chmod -R 777 /opt/tools/
+RUN chmod -R 777 /opt/tools/bwa/v0.7.15/bwa
+RUN chmod -R 777 /opt/tools/samtools/1.3.1/bin/samtools.pl
 
 COPY docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh

@@ -133,12 +133,17 @@ setGuidesFromCoords <- function(genome_idx, progress){
     increment_prog(progress, 5, "Fetching sequence")
     
     gd <- setGuideCoords()
-    cmd <- "samtools faidx %s %s:%s-%s"
+    #cmd <- "samtools faidx %s %s:%s-%s"
+    cmd <- "samtools"
     
     # Try to extract the sequence matching this location from the reference
-    ref <- system(sprintf(cmd, genome_idx, GenomicRanges::seqnames(gd)[1], 
-                          GenomicRanges::start(gd)[1], GenomicRanges::end(gd)[1]),
-                  intern = TRUE)
+    # ref <- system(sprintf(cmd, genome_idx, GenomicRanges::seqnames(gd)[1], 
+    #                       GenomicRanges::start(gd)[1], GenomicRanges::end(gd)[1]),
+    #               intern = TRUE)
+    
+    ref <- system2(command = cmd, args = c("faidx", "%s", "%s:%s-%s", genome_idx , GenomicRanges::seqnames(gd)[1], 
+                                           GenomicRanges::start(gd)[1], GenomicRanges::end(gd)[1])
+                  )
  
     if(length(ref) < 2){
         createAlert(session, "alertRef", alertId = "alertRef3", title = "INFO",
@@ -175,10 +180,10 @@ mapGuide <- function(ref, idx){
    cmd <- paste("bwa aln %s %s | bwa samse %s - %s | grep -v '^@' | awk -F \"\t\"",
               "'{if ($2 == 0)print $3, $4, length($10), \"+\";",
               "else if ($2 == 16) print $3, $4, length($10), \"-\"}' && rm %s")
-
-   result <- NULL
         
    err <- try({
+     #result <- system2(command = "bwa", args = c("aln","%s","%s","|", "bwa","samse", "%s","-","%s","|","-v","'^@'","|","awk","-F","\"\t\"","'{if ($2 == 0)print $3, $4, length($10), \"+\";","else if ($2 == 16) print $3, $4, length($10), \"-\"}' && rm %s"))
+     #result <- strsplit(result, " ")[[1]]
      result <- strsplit(system(sprintf(cmd, idx, fa, idx, fa, fa), intern = TRUE), " ")[[1]]
      print(result)
    })
@@ -211,7 +216,7 @@ observeEvent(input$run_guide,{
     } else if (nchar(input$ref_seqs) >=  10) {
     
         # Check bwa is available
-        if (system("bwa", ignore.stderr = TRUE) == 127){
+        if (system2(command = "bwa") == 127){
             createAlert(session, "alertRef","alertRef5", title = "WARNING",
             content = "Please make sure BWA is available", 
             style = "warning",

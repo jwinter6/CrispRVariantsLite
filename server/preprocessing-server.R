@@ -37,7 +37,7 @@ convertAb1toFastq <- function(){
 mapFastQ <- function(){
   
     # If bwa cannot be run, stop the app
-    if (system("bwa", ignore.stderr = TRUE) == 127){
+    if (system2(command = "bwa") == 127){
         createAlert(session, "alertAB1", "alertAB1_1", title = "WARNING",
            content = "Please make sure BWA is available", 
            style = "warning", append = FALSE, dismiss = FALSE)
@@ -77,7 +77,15 @@ mapFastQ <- function(){
           cmd <- paste0("bwa mem -t 2 ", bwa_index, " ", 
                     v$fq_fnames[i]," | samtools view -Sb - > ", bm_fnames[i])
           # system2 command
-          system(cmd)
+          bwa <- try(system2(command = "bwa", args = c("mem","-t 2", bwa_index, v$fq_fnames[i], "|","samtools","view","-Sb","-",">",bm_fnames[i])))
+          if(class(bwa) == "try-error")
+          {
+            createAlert(session, "alertAB1", "alertAB1_1", title = "WARNING",
+                        content = paste("BWA Error !", bwa[1] , sep=" "), 
+                        style = "warning", append = FALSE, dismiss = FALSE)
+            stopApp()
+          }
+          #system(cmd)
           Rsamtools::indexBam(Rsamtools::sortBam(bm_fnames[i],v$srt_bm_names[i]))
           unlink(bm_fnames[i])
         }
