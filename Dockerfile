@@ -1,20 +1,19 @@
 #SAMTOOLS
-FROM comics/samtools:1.3.1 as SAMTOOLS
+#FROM comics/samtools:1.3.1 as SAMTOOLS
 # Make BWA and SAMTOOLS accessible
 #RUN setenforce 0
-RUN chmod -R 777 /software/applications/
-RUN chmod -R 777 /software/applications/samtools/1.3.1/bin/samtools.pl
+#RUN chmod -R 777 /software/applications/
+#RUN chmod -R 777 /software/applications/samtools/1.3.1/bin/samtools.pl
 
 # BWA
-FROM comics/bwa:0.7.15 as BWA
+#FROM comics/bwa:0.7.15 as BWA
 # Make BWA and SAMTOOLS accessible
 #RUN setenforce 0
-RUN chmod -R 777 /software/applications/
-RUN chmod -R 777 /software/applications/bwa/v0.7.15/bwa
+#RUN chmod -R 777 /software/applications/
+#RUN chmod -R 777 /software/applications/bwa/v0.7.15/bwa
 
 # R base
 FROM rocker/r-ver:3.4.0
-RUN setenforce 0
 
 MAINTAINER Jan Winter "jan.winter@dkfz.de"
 
@@ -23,21 +22,27 @@ RUN \
     mkdir -p /opt/tools/ \
     chmod 777 /opt/tools
     
-COPY --from=SAMTOOLS /software/applications/ /opt/tools
-COPY --from=BWA /software/applications/ /opt/tools
-ENV PATH=/opt/tools/bwa/v0.7.15:$PATH
-RUN echo 'export PATH=/opt/tools/:$PATH' >> /etc/profile
+######## SAMTOOLS
 
-ENV PATH=/opt/tools/samtools/1.3.1/bin:$PATH
-RUN echo 'export PATH=/opt/tools/:$PATH' >> /etc/profile
+MAINTAINER Ian Merrick <MerrickI@Cardiff.ac.uk>
 
+##############################################################
+# Dockerfile Version:   0.1
+# Software:             samtools
+# Software Version:     1.3.1
+# Software Website:     https://github.com/samtools/samtools/
+# Description:          samtools
+##############################################################
 
-ENV PATH=/opt/tools:$PATH
-RUN echo 'export PATH=/opt/tools/:$PATH' >> /etc/profile
+ENV APP_NAME=samtools
+ENV VERSION=1.3.1
+ENV GIT=https://github.com/BenLangmead/samtools.git
+ENV APPS=/opt/tools
+ENV DEST=$APPS/$APP_NAME/
+ENV PATH=$APPS/$APP_NAME/$VERSION/bin:$APPS/bcftools/$VERSION/bin:$PATH
 
-#### things we need for the crispranalyzer package
-#### and for the crispr reannotator
-#### and another deb pkgs we later need for the R libraries to compile or run
+RUN apt-get update
+
 RUN apt-get update && apt-get install -y  \
     wget \
     sudo \
@@ -56,18 +61,90 @@ RUN apt-get update && apt-get install -y  \
     curl \
     libssl-dev \
     libtiff5-dev \
-    htop
-    
-RUN apt-get update && apt-get install -y ghostscript
+    htop \
+    ghostscript \
+    libtbb2
 
+RUN apt-get install -y zlib1g-dev \
+                   libncurses5-dev ; \
+    wget https://github.com/samtools/htslib/archive/$VERSION.tar.gz htslib-$VERSION.tar.gz ; \
+    wget https://github.com/samtools/samtools/archive/$VERSION.tar.gz samtools-$VERSION.tar.gz ; \
+    wget https://github.com/samtools/bcftools/archive/$VERSION.tar.gz bcftools-$VERSION.tar.gz ; \
+    #curl -L -o htslib-$VERSION.tar.gz https://github.com/samtools/htslib/archive/$VERSION.tar.gz ; \
+    #curl -L -o samtools-$VERSION.tar.gz https://github.com/samtools/samtools/archive/$VERSION.tar.gz ; \
+    #curl -L -o bcftools-$VERSION.tar.gz https://github.com/samtools/bcftools/archive/$VERSION.tar.gz ; \
+    tar xzf bcftools-$VERSION.tar.gz ; \ 
+    tar xzf htslib-$VERSION.tar.gz ; \ 
+    tar xzf samtools-$VERSION.tar.gz ; \
+    rm -rf bcftools-$VERSION.tar.gz ; \
+    rm -rf htslib-$VERSION.tar.gz ; \
+    rm -rf samtools-$VERSION.tar.gz ; \
+    mv htslib-$VERSION htslib ; \ 
+    cd bcftools-$VERSION ; \
+    make -j HTSDIR=../htslib ; \
+    make prefix=$APPS/bcftools/$VERSION install ; \
+    cd .. ; \
+    cd samtools-$VERSION ; \
+    make -j HTSDIR=../htslib ; \
+    make prefix=$APPS/$APP_NAME/$VERSION install ; \
+    cd ../ ; \
+    rm -rf htslib samtools-$VERSION bcftools-$VERSION
+
+# Add PATH
+RUN echo 'export PATH=/opt/tools/:$PATH' >> /etc/profile
+
+########## BWA
+
+MAINTAINER Ian Merrick <MerrickI@Cardiff.ac.uk>
+
+##############################################################
+# Software:             bwa
+# Software Version:     0.7.15
+# Software Website:     https://github.com/lh3/bwa.git
+# Description:          Burrow-Wheeler Aligner for pairwise alignment between DNA sequences
+##############################################################
+
+ENV APP_NAME=bwa
+ENV VERSION=v0.7.15
+ENV GIT=https://github.com/lh3/bwa.git
+ENV DEST=/opt/tools/$APP_NAME/
+ENV PATH=$DEST/$VERSION/:$DEST/$VERSION/bwakit:$PATH
+
+RUN git clone $GIT ; \
+    cd $APP_NAME ; \
+    git checkout tags/$VERSION ; \
+    make -j ; \
+    mkdir -p /usr/share/licenses/$APP_NAME-$VERSION ; \
+    cp COPYING /usr/share/licenses/$APP_NAME-$VERSION/ ; \
+    rm -rf .git ; \
+    cd ../ ;  \
+    mkdir -p $DEST ; \
+    mv $APP_NAME $DEST/$VERSION
+    
+#COPY --from=SAMTOOLS /software/applications/ /opt/tools
+#COPY --from=BWA /software/applications/ /opt/tools
+#ENV PATH=/opt/tools/bwa/v0.7.15:$PATH
+
+# Add PATH
+RUN echo 'export PATH=/opt/tools/:$PATH' >> /etc/profile
+
+#ENV PATH=/opt/tools/samtools/1.3.1/bin:$PATH
+#RUN echo 'export PATH=/opt/tools/:$PATH' >> /etc/profile
+
+
+
+#### things we need for the CRISPRVariantslite package
+#### and another deb pkgs we later need for the R libraries to compile or run
 
 # install the shiny server debian package from r-studio
-COPY ./shiny-server-1.5.2.837-amd64.deb /tmp/ss.deb
-RUN gdebi -n /tmp/ss.deb && \
-    rm -f /tmp/ss.deb
+RUN wget https://download3.rstudio.org/ubuntu-12.04/x86_64/shiny-server-1.5.3.838-amd64.deb -P /tmp/
+#COPY ./shiny-server-1.5.2.837-amd64.deb /tmp/ss.deb
+RUN gdebi -n /tmp/shiny-server-1.5.3.838-amd64.deb && \
+    rm -f /tmp/shiny-server-1.5.3.838-amd64.deb
 
 COPY ./shiny-server.sh /usr/bin/shiny-server.sh
 RUN chmod +x /usr/bin/shiny-server.sh
+
 
 # now to the R part...
 
@@ -104,8 +181,9 @@ RUN apt-get -qq clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
 # Downloaded repository from https://github.com/jwinter6/CrispRVariantsLite/
-# use from folder
-COPY ./ /srv/shiny-server/CRISPRVariantsLite
+RUN mkdir /srv/shiny-server/CRISPRVariantsLite
+RUN git clone https://github.com/jwinter6/CrispRVariantsLite.git /tmp/CRISPRVariantsLite
+RUN cp -r /tmp/CRISPRVariantsLite/* /srv/shiny-server/CRISPRVariantsLite/
 
 
 # add R profile options
@@ -121,8 +199,6 @@ RUN echo 'options(download.file.method = "libcurl")' >> /usr/local/lib/R/etc/Rpr
 
 # Make BWA and SAMTOOLS accessible
 RUN chmod -R 777 /opt/tools/
-RUN chmod -R 777 /opt/tools/bwa/v0.7.15/bwa
-RUN chmod -R 777 /opt/tools/samtools/1.3.1/bin/samtools.pl
 
 COPY docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh
