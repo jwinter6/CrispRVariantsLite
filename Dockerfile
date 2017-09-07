@@ -35,7 +35,7 @@ MAINTAINER Ian Merrick <MerrickI@Cardiff.ac.uk>
 ##############################################################
 
 ENV APP_NAME=samtools
-ENV VERSION=1.3.1
+ENV VERSION=1.5
 ENV GIT=https://github.com/BenLangmead/samtools.git
 ENV APPS=/opt/tools
 ENV DEST=$APPS/$APP_NAME/
@@ -67,31 +67,34 @@ RUN apt-get update && apt-get install -y  \
 
 RUN apt-get install -y zlib1g-dev \
                    libncurses5-dev ; \
-    wget https://github.com/samtools/htslib/archive/$VERSION.tar.gz htslib-$VERSION.tar.gz ; \
-    wget https://github.com/samtools/samtools/archive/$VERSION.tar.gz samtools-$VERSION.tar.gz ; \
-    wget https://github.com/samtools/bcftools/archive/$VERSION.tar.gz bcftools-$VERSION.tar.gz ; \
+    wget https://github.com/samtools/htslib/archive/$VERSION.tar.gz -O /tmp/htslib-$VERSION.tar.gz; \
+    wget https://github.com/samtools/samtools/archive/$VERSION.tar.gz -O /tmp/samtools-$VERSION.tar.gz; \
+    wget https://github.com/samtools/bcftools/archive/$VERSION.tar.gz -O /tmp/bcftools-$VERSION.tar.gz; \
     #curl -L -o htslib-$VERSION.tar.gz https://github.com/samtools/htslib/archive/$VERSION.tar.gz ; \
     #curl -L -o samtools-$VERSION.tar.gz https://github.com/samtools/samtools/archive/$VERSION.tar.gz ; \
     #curl -L -o bcftools-$VERSION.tar.gz https://github.com/samtools/bcftools/archive/$VERSION.tar.gz ; \
-    tar xzf bcftools-$VERSION.tar.gz ; \ 
-    tar xzf htslib-$VERSION.tar.gz ; \ 
-    tar xzf samtools-$VERSION.tar.gz ; \
-    rm -rf bcftools-$VERSION.tar.gz ; \
-    rm -rf htslib-$VERSION.tar.gz ; \
-    rm -rf samtools-$VERSION.tar.gz ; \
-    mv htslib-$VERSION htslib ; \ 
-    cd bcftools-$VERSION ; \
+    tar xzf /tmp/bcftools-$VERSION.tar.gz ; \ 
+    tar xzf /tmp/htslib-$VERSION.tar.gz ; \ 
+    tar xzf /tmp/samtools-$VERSION.tar.gz ; \
+    rm -rf /tmp/bcftools-$VERSION.tar.gz ; \
+    rm -rf /tmp/htslib-$VERSION.tar.gz ; \
+    rm -rf /tmp/samtools-$VERSION.tar.gz ; \
+    mv /tmp/htslib-$VERSION /tmp/htslib ; \ 
+    cd /tmp/bcftools-$VERSION ; \
     make -j HTSDIR=../htslib ; \
     make prefix=$APPS/bcftools/$VERSION install ; \
     cd .. ; \
-    cd samtools-$VERSION ; \
+    cd /tmp/samtools-$VERSION ; \
     make -j HTSDIR=../htslib ; \
     make prefix=$APPS/$APP_NAME/$VERSION install ; \
     cd ../ ; \
-    rm -rf htslib samtools-$VERSION bcftools-$VERSION
+    rm -rf /tmp/htslib /tmp/samtools-$VERSION /tmp/bcftools-$VERSION
 
 # Add PATH
-RUN echo 'export PATH=/opt/tools/:$PATH' >> /etc/profile
+#RUN echo 'export PATH=/opt/tools/bcftools/$VERSION/:$PATH' >> /etc/profile
+RUN echo 'export PATH=/opt/tools/samtools/$VERSION/:$PATH' >> /etc/profile
+#RUN echo 'export PATH=/opt/tools/htslib/$VERSION/:$PATH' >> /etc/profile
+
 
 ########## BWA
 
@@ -126,7 +129,7 @@ RUN git clone $GIT ; \
 #ENV PATH=/opt/tools/bwa/v0.7.15:$PATH
 
 # Add PATH
-RUN echo 'export PATH=/opt/tools/:$PATH' >> /etc/profile
+RUN echo 'export PATH=/opt/tools/bwa/v0.7.15/:$PATH' >> /etc/profile
 
 #ENV PATH=/opt/tools/samtools/1.3.1/bin:$PATH
 #RUN echo 'export PATH=/opt/tools/:$PATH' >> /etc/profile
