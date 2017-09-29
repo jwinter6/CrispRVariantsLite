@@ -133,7 +133,7 @@ createCrispPlot <- reactive({
         # Save plot
         ggplot2::ggsave(filename = "plot.png", plot = g, device = "png", dpi = 600)
         # Return plot for Visualization
-        return(g)
+        return(print(g))
       }
       
     })
