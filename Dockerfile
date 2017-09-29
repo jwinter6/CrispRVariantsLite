@@ -1,18 +1,3 @@
-#SAMTOOLS
-#FROM comics/samtools:1.3.1 as SAMTOOLS
-# Make BWA and SAMTOOLS accessible
-#RUN setenforce 0
-#RUN chmod -R 777 /software/applications/
-#RUN chmod -R 777 /software/applications/samtools/1.3.1/bin/samtools.pl
-
-# BWA
-#FROM comics/bwa:0.7.15 as BWA
-# Make BWA and SAMTOOLS accessible
-#RUN setenforce 0
-#RUN chmod -R 777 /software/applications/
-#RUN chmod -R 777 /software/applications/bwa/v0.7.15/bwa
-
-# R base
 FROM rocker/r-ver:3.4.0
 
 MAINTAINER Jan Winter "jan.winter@dkfz.de"
@@ -29,7 +14,7 @@ MAINTAINER Ian Merrick <MerrickI@Cardiff.ac.uk>
 ##############################################################
 # Dockerfile Version:   0.1
 # Software:             samtools
-# Software Version:     1.3.1
+# Software Version:     1.5
 # Software Website:     https://github.com/samtools/samtools/
 # Description:          samtools
 ##############################################################

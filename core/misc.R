@@ -65,3 +65,33 @@ removeAttribs <- function(tag, ...) {
 getAttribs <- function(tag) {
   tag$attribs
 }
+
+
+
+##### Modified CRISPRVariants arrange Plots function to accomodate download of high-res images
+
+arrangePlots_highres <- function(top.plot, left.plot, right.plot, fig.height = NULL,
+                         col.wdth.ratio  = c(2, 1), row.ht.ratio = c(1,6),
+                         left.plot.margin = grid::unit(c(0.1,0,3,0.2), "lines")){
+  
+  # Set the size ratio of the top and bottom rows
+  plot_hts <- if (is.null(fig.height)){ row.ht.ratio
+  }else { fig.height/sum(row.ht.ratio)*row.ht.ratio }
+  
+  # Remove y-axis labels from right plot
+  right.plot <- right.plot + theme(axis.text.y = element_blank(),
+                                   axis.ticks.y = element_blank())
+  
+  # Adjust margins of left.plot
+  left.plot <- left.plot + theme(plot.margin = left.plot.margin)
+  
+  # Convert plots to grobs, lock plot heights
+  p2 <- ggplot2::ggplotGrob(left.plot)
+  p3 <- ggplot2::ggplotGrob(right.plot)
+  p3$heights <- p2$heights
+  
+  # Return arranged plots
+  return(gridExtra::arrangeGrob(top.plot,
+                                 gridExtra::arrangeGrob(p2, p3, ncol = 2, widths = col.wdth.ratio),
+                                 nrow = 2, heights = plot_hts, newpage = FALSE))
+}

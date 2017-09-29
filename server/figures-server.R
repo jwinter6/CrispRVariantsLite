@@ -119,13 +119,23 @@ createCrispPlot <- reactive({
                        "Normal" = ggplot2::unit(c(1,0,5,2), "lines"),
                        "More" = ggplot2::unit(c(1,0,10,2), "lines"))
   
-      try({
+      g <- try({
       CrispRVariants:::arrangePlots(
         annotation_plot(), allele_plot(), frequency_heatmap(),
         col.wdth.ratio = c_wd, row.ht.ratio = r_ht,
         left.plot.margin = plot_margin)
       }, silent = TRUE) 
     
+      if(class(g) == "try-error")
+      {
+        toggleModal(session, "info_error", toggle = "open")
+      } else {
+        # Save plot
+        ggplot2::ggsave(filename = "plot.png", plot = g, device = "png", dpi = 600)
+        # Return plot for Visualization
+        return(g)
+      }
+      
     })
   
   })
@@ -149,3 +159,23 @@ output$plots <- renderUI({
     toggleModal(session, "modal_2", toggle = "close")
   })
 
+ 
+ # Make downloadhandler for plot
+ output$download_plot <- downloadHandler(
+   filename = "CRISPRVariants_plot.png",
+   content = function(file) {
+       file.copy("plot.png", file, overwrite = TRUE)
+     
+   }
+ )
+
+ 
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
