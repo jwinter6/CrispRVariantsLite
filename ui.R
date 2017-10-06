@@ -29,8 +29,6 @@ body <- dashboardBody(
     box(width = 8, height = "100%",
       solidHeader = T,
       bsAlert("AlertUI"),
-      # Add download of plot
-      downloadButton('download_plot', 'Download Plot'),
       wellPanel(htmlOutput("plots"))
       ),
     plotOptions,
@@ -42,18 +40,7 @@ body <- dashboardBody(
     modal_ref,
     #modal_help,
     modal_save,
-    modal_reset,
-    shinyBS::bsModal(id = "info_error", title = "Attention", trigger = "test", size = "large",
-                     fluidRow(
-                       style="width:100%;",
-                       column(width=8,offset=2, class="alert alert-warning",
-                              shiny::tags$span(style="float:left;padding:10px;", HTML('<i class="fa fa-exclamation-triangle fa-4x"></i>')),
-                              shiny::tags$span(
-                                shiny::tags$p(class="lead text-center",  "Plot could not be drawn.")
-                              )
-                       )
-                     )
-    )
+    modal_reset
   )
 )
 

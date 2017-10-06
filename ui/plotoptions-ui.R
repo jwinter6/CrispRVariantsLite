@@ -127,11 +127,10 @@ plot.type <- radioButtons("plot.type", "Plot type", choices = c("proportions","c
 #----------------
 
 bscollapse_1 <- bsCollapse(id = "bscollapse_1", open = "Plot Alignments Options",
-  
+
   bsCollapsePanel("Layout options",
     helpText(paste("These options control the relative sizes of the plots.",
                    "Click 'Replot' to replot the data with the new options.")),
-    
     hr(),
     fluidRow(
         column(width = 4,  row.ht.ratio),
